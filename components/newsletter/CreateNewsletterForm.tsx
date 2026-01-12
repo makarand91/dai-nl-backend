@@ -7,7 +7,6 @@ export default function CreateNewsletterForm() {
     strapiDocumentId: '',
     title: '',
     subject: '',
-    htmlContent: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,7 +43,6 @@ export default function CreateNewsletterForm() {
         strapiDocumentId: '',
         title: '',
         subject: '',
-        htmlContent: '',
       });
 
       // Refresh the page after a short delay
@@ -63,7 +61,7 @@ export default function CreateNewsletterForm() {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Strapi Document ID (Optional)
+            Strapi Document ID *
           </label>
           <input
             type="text"
@@ -73,53 +71,36 @@ export default function CreateNewsletterForm() {
             }
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="e.g., suici87c0i12iqwgafc1q3a5"
+            required
           />
           <p className="text-xs text-gray-500 mt-1">
-            If provided, newsletter and articles will be fetched from Strapi 5
+            Newsletter will be fetched from Strapi 5. Template is auto-selected based on brand field.
           </p>
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Title *
+            Title (Optional)
           </label>
           <input
             type="text"
             value={formData.title}
             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Newsletter title (optional if using Strapi)"
-            required={!formData.strapiDocumentId}
+            placeholder="Override title from Strapi (leave blank to use IssueDate)"
           />
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Subject *
+            Subject (Optional)
           </label>
           <input
             type="text"
             value={formData.subject}
             onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Email subject line (optional if using Strapi)"
-            required={!formData.strapiDocumentId}
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            HTML Content *
-          </label>
-          <textarea
-            value={formData.htmlContent}
-            onChange={(e) =>
-              setFormData({ ...formData, htmlContent: e.target.value })
-            }
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
-            placeholder="Enter HTML content (optional if using Strapi)"
-            rows={10}
-            required={!formData.strapiDocumentId}
+            placeholder="Override subject from Strapi (leave blank to use Strapi subject)"
           />
         </div>
 
