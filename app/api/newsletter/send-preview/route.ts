@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
       metadata: {
         recipientEmail,
       },
-      userId: session.user?.email,
+      userId: session.user?.email || undefined,
     });
 
     return NextResponse.json({

@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
         scheduledFor: scheduledDate.toISOString(),
         recipientCount: recipientList?.length || 0,
       },
-      userId: session.user?.email,
+      userId: session.user?.email || undefined,
     });
 
     return NextResponse.json({

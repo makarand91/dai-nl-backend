@@ -15,12 +15,19 @@ import { SESProvider } from './providers/ses';
  * - resend: Use Resend (implement provider first)
  */
 class EmailService {
-  private static instance: EmailService;
-  private provider: IEmailProvider;
+  private static instance: EmailService | null = null;
+  private provider: IEmailProvider | null = null;
 
   private constructor() {
-    const providerType = (process.env.EMAIL_PROVIDER || 'mailjet') as EmailProviderType;
-    this.provider = this.createProvider(providerType);
+    // Lazy initialization - provider will be created on first use
+  }
+
+  private getProvider(): IEmailProvider {
+    if (!this.provider) {
+      const providerType = (process.env.EMAIL_PROVIDER || 'mailjet') as EmailProviderType;
+      this.provider = this.createProvider(providerType);
+    }
+    return this.provider;
   }
 
   private createProvider(type: EmailProviderType): IEmailProvider {
@@ -49,14 +56,14 @@ class EmailService {
    * Send a single email
    */
   async sendEmail(options: EmailOptions): Promise<void> {
-    return this.provider.sendEmail(options);
+    return this.getProvider().sendEmail(options);
   }
 
   /**
    * Send multiple emails in batch
    */
   async sendBatch(emails: EmailOptions[]): Promise<void> {
-    return this.provider.sendBatch(emails);
+    return this.getProvider().sendBatch(emails);
   }
 
   /**

@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
       newsletterId,
       action: 'previewed',
       timestamp: new Date().toISOString(),
-      userId: session.user?.email,
+      userId: session.user?.email || undefined,
     });
 
     return NextResponse.json({
