@@ -49,7 +49,7 @@ async function testMailjetCredentials() {
     });
 
     // Try to get account information (simple API test)
-    const result = await mailjet
+    const result: any = await mailjet
       .get('user')
       .request();
 

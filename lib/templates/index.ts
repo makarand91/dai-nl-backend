@@ -1,11 +1,13 @@
 import { NewsletterTemplate } from './types';
 import { defaultTemplate } from './default-template';
 import { modernTemplate } from './modern-template';
+import { corporateTemplate } from './corporate-template';
 
 // Template Registry
 const templates = new Map<string, NewsletterTemplate>([
   [defaultTemplate.id, defaultTemplate],
   [modernTemplate.id, modernTemplate],
+  [corporateTemplate.id, corporateTemplate],
 ]);
 
 /**
@@ -33,3 +35,4 @@ export function registerTemplate(template: NewsletterTemplate): void {
 export * from './types';
 export { defaultTemplate } from './default-template';
 export { modernTemplate } from './modern-template';
+export { corporateTemplate } from './corporate-template';
