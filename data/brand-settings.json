@@ -1,0 +1,16 @@
+{
+  "default": {
+    "templateId": "default"
+  },
+  "brand-a": {
+    "templateId": "modern",
+    "defaultSubject": "Brand A Newsletter",
+    "customization": {
+      "primaryColor": "#667eea"
+    }
+  },
+  "brand-b": {
+    "templateId": "default",
+    "defaultSubject": "Brand B Weekly Update"
+  }
+}

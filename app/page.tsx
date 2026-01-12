@@ -44,6 +44,12 @@ export default function Home() {
               Newsletter Management System
             </h1>
             <div className="flex items-center gap-4">
+              <a
+                href="/settings/brands"
+                className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              >
+                Brand Settings
+              </a>
               <span className="text-sm text-gray-600">
                 {session.user?.email}
               </span>

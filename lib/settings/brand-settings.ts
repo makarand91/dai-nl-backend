@@ -2,8 +2,11 @@
  * Brand to Template Mapping Configuration
  *
  * This file maps brand identifiers to newsletter templates.
- * Update this file to change which template is used for each brand.
+ * Brand mappings are stored in data/brand-settings.json and can be updated via API.
  */
+
+import fs from 'fs';
+import path from 'path';
 
 export interface BrandSettings {
   templateId: string;
@@ -15,43 +18,74 @@ export interface BrandSettings {
   };
 }
 
+const SETTINGS_FILE = path.join(process.cwd(), 'data', 'brand-settings.json');
+
+// In-memory cache
+let cachedSettings: Record<string, BrandSettings> | null = null;
+
 /**
- * Brand to Template Mapping
- *
- * Add your brands here and map them to template IDs.
- * Available templates: 'default', 'modern'
+ * Load brand settings from JSON file
  */
-export const brandTemplateMap: Record<string, BrandSettings> = {
-  // Default fallback (when brand is null or not found)
-  default: {
-    templateId: 'default',
-  },
+export function loadBrandSettings(): Record<string, BrandSettings> {
+  if (cachedSettings) {
+    return cachedSettings;
+  }
 
-  // Example brand configurations
-  'brand-a': {
-    templateId: 'modern',
-    defaultSubject: 'Brand A Newsletter',
-    customization: {
-      primaryColor: '#667eea',
+  try {
+    if (fs.existsSync(SETTINGS_FILE)) {
+      const fileContent = fs.readFileSync(SETTINGS_FILE, 'utf-8');
+      cachedSettings = JSON.parse(fileContent);
+      return cachedSettings!;
+    }
+  } catch (error) {
+    console.error('Error loading brand settings:', error);
+  }
+
+  // Default fallback
+  return {
+    default: {
+      templateId: 'default',
     },
-  },
+  };
+}
 
-  'brand-b': {
-    templateId: 'default',
-    defaultSubject: 'Brand B Weekly Update',
-  },
+/**
+ * Save brand settings to JSON file
+ */
+export function saveBrandSettings(settings: Record<string, BrandSettings>): void {
+  try {
+    const dir = path.dirname(SETTINGS_FILE);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    fs.writeFileSync(SETTINGS_FILE, JSON.stringify(settings, null, 2), 'utf-8');
+    cachedSettings = settings; // Update cache
+  } catch (error) {
+    console.error('Error saving brand settings:', error);
+    throw new Error('Failed to save brand settings');
+  }
+}
 
-  // Add more brand mappings here...
-  // 'your-brand-id': {
-  //   templateId: 'default',
-  //   defaultSubject: 'Your Brand Newsletter',
-  // },
-};
+/**
+ * Clear cache (useful after updates)
+ */
+export function clearBrandSettingsCache(): void {
+  cachedSettings = null;
+}
+
+/**
+ * Get brand template map
+ */
+export function getBrandTemplateMap(): Record<string, BrandSettings> {
+  return loadBrandSettings();
+}
 
 /**
  * Get template ID for a brand
  */
 export function getTemplateForBrand(brand?: string | null): string {
+  const brandTemplateMap = loadBrandSettings();
+
   if (!brand) {
     return brandTemplateMap.default.templateId;
   }
@@ -69,6 +103,8 @@ export function getTemplateForBrand(brand?: string | null): string {
  * Get brand settings
  */
 export function getBrandSettings(brand?: string | null): BrandSettings {
+  const brandTemplateMap = loadBrandSettings();
+
   if (!brand) {
     return brandTemplateMap.default;
   }
