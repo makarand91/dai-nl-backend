@@ -8,7 +8,7 @@ import {
   addNewsletterHistory,
   saveNewsletterPreview,
 } from '@/lib/aws/dynamodb-client';
-import { getStrapiNewsletter, convertStrapiContentToHTML } from '@/lib/utils/strapi-client';
+import { getStrapiNewsletter, convertStrapiNewsletterToHTML } from '@/lib/utils/strapi-client';
 import { Newsletter, NewsletterPreview } from '@/lib/types/newsletter';
 import { randomUUID } from 'crypto';
 
@@ -21,15 +21,15 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { strapiContentId, title, subject, htmlContent } = body;
+    const { strapiDocumentId, title, subject, htmlContent } = body;
 
     let finalHtmlContent = htmlContent;
     let finalTitle = title;
     let finalSubject = subject;
 
-    // If Strapi content ID is provided, fetch from Strapi
-    if (strapiContentId) {
-      const strapiContent = await getStrapiNewsletter(strapiContentId);
+    // If Strapi document ID is provided, fetch from Strapi
+    if (strapiDocumentId) {
+      const strapiContent = await getStrapiNewsletter(strapiDocumentId);
       if (!strapiContent) {
         return NextResponse.json(
           { error: 'Newsletter not found in Strapi' },
@@ -37,11 +37,10 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      finalTitle = strapiContent.attributes.title;
-      finalSubject = strapiContent.attributes.subject;
-      finalHtmlContent =
-        strapiContent.attributes.htmlContent ||
-        (await convertStrapiContentToHTML(strapiContent.attributes.content));
+      // Use IssueDate as title if no title provided
+      finalTitle = title || `Newsletter - ${strapiContent.IssueDate}`;
+      finalSubject = strapiContent.subject || subject || `Newsletter ${strapiContent.IssueDate}`;
+      finalHtmlContent = convertStrapiNewsletterToHTML(strapiContent);
     }
 
     if (!finalHtmlContent || !finalTitle || !finalSubject) {
@@ -63,7 +62,7 @@ export async function POST(request: NextRequest) {
       title: finalTitle,
       subject: finalSubject,
       htmlContent: finalHtmlContent,
-      strapiContentId: strapiContentId?.toString(),
+      strapiContentId: strapiDocumentId,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       status: 'draft',

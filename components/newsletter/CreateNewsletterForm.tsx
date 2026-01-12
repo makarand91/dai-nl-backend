@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 export default function CreateNewsletterForm() {
   const [formData, setFormData] = useState({
-    strapiContentId: '',
+    strapiDocumentId: '',
     title: '',
     subject: '',
     htmlContent: '',
@@ -41,7 +41,7 @@ export default function CreateNewsletterForm() {
 
       // Reset form
       setFormData({
-        strapiContentId: '',
+        strapiDocumentId: '',
         title: '',
         subject: '',
         htmlContent: '',
@@ -63,19 +63,19 @@ export default function CreateNewsletterForm() {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Strapi Content ID (Optional)
+            Strapi Document ID (Optional)
           </label>
           <input
             type="text"
-            value={formData.strapiContentId}
+            value={formData.strapiDocumentId}
             onChange={(e) =>
-              setFormData({ ...formData, strapiContentId: e.target.value })
+              setFormData({ ...formData, strapiDocumentId: e.target.value })
             }
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Enter Strapi newsletter ID to auto-fill"
+            placeholder="e.g., suici87c0i12iqwgafc1q3a5"
           />
           <p className="text-xs text-gray-500 mt-1">
-            If provided, newsletter content will be fetched from Strapi CMS
+            If provided, newsletter and articles will be fetched from Strapi 5
           </p>
         </div>
 
@@ -88,8 +88,8 @@ export default function CreateNewsletterForm() {
             value={formData.title}
             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Newsletter title"
-            required={!formData.strapiContentId}
+            placeholder="Newsletter title (optional if using Strapi)"
+            required={!formData.strapiDocumentId}
           />
         </div>
 
@@ -102,8 +102,8 @@ export default function CreateNewsletterForm() {
             value={formData.subject}
             onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Email subject line"
-            required={!formData.strapiContentId}
+            placeholder="Email subject line (optional if using Strapi)"
+            required={!formData.strapiDocumentId}
           />
         </div>
 
@@ -117,9 +117,9 @@ export default function CreateNewsletterForm() {
               setFormData({ ...formData, htmlContent: e.target.value })
             }
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
-            placeholder="Enter HTML content"
+            placeholder="Enter HTML content (optional if using Strapi)"
             rows={10}
-            required={!formData.strapiContentId}
+            required={!formData.strapiDocumentId}
           />
         </div>
 

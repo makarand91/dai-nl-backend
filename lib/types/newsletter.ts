@@ -49,15 +49,38 @@ export interface SendPreviewRequest {
   recipientEmail: string;
 }
 
+// Strapi 5 Types
+export interface StrapiArticle {
+  id: number;
+  documentId: string;
+  title: string;
+  slug: string;
+  content: string;
+  author?: string;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt?: string;
+  is_sponsored?: boolean;
+  tags?: string;
+  category?: string;
+  thumbnail?: any;
+  asset?: any;
+}
+
 export interface StrapiNewsletterContent {
   id: number;
-  attributes: {
-    title: string;
-    subject: string;
-    content: string;
-    htmlContent?: string;
-    publishedAt?: string;
-    createdAt: string;
-    updatedAt: string;
-  };
+  documentId: string;
+  IssueDate: string;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt?: string;
+  brand?: string;
+  uid?: string;
+  subject?: string;
+  articles: StrapiArticle[];
+}
+
+export interface StrapiNewsletterResponse {
+  data: StrapiNewsletterContent;
+  meta: any;
 }
