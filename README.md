@@ -172,7 +172,8 @@ aws dynamodb create-table \
   --table-name newsletters \
   --attribute-definitions AttributeName=id,AttributeType=S \
   --key-schema AttributeName=id,KeyType=HASH \
-  --billing-mode PAY_PER_REQUEST
+  --billing-mode PAY_PER_REQUEST \
+  --region us-east-1
 ```
 
 **Newsletter History Table:**
@@ -185,15 +186,12 @@ aws dynamodb create-table \
   --key-schema \
     AttributeName=newsletterId,KeyType=HASH \
     AttributeName=timestamp,KeyType=RANGE \
-  --billing-mode PAY_PER_REQUEST
+  --billing-mode PAY_PER_REQUEST \
+  --region us-east-1
 ```
 
 **Brand Settings Table:**
 ```bash
-# Easiest way - use the automated script:
-npm run init-settings
-
-# Or create manually:
 aws dynamodb create-table \
   --table-name newsletter-settings \
   --attribute-definitions \
@@ -202,10 +200,29 @@ aws dynamodb create-table \
   --key-schema \
     AttributeName=pk,KeyType=HASH \
     AttributeName=sk,KeyType=RANGE \
-  --billing-mode PAY_PER_REQUEST
+  --billing-mode PAY_PER_REQUEST \
+  --region us-east-1
 ```
 
-> **Tip:** The `npm run init-settings` command will create the table, migrate any existing JSON data, and initialize with defaults. See `docs/BRAND_SETTINGS_SETUP.md` for details.
+**To delete and recreate (if needed):**
+```bash
+# Delete table
+aws dynamodb delete-table --table-name newsletter-settings --region us-east-1
+
+# Wait 30 seconds, then recreate
+aws dynamodb create-table \
+  --table-name newsletter-settings \
+  --attribute-definitions \
+    AttributeName=pk,AttributeType=S \
+    AttributeName=sk,AttributeType=S \
+  --key-schema \
+    AttributeName=pk,KeyType=HASH \
+    AttributeName=sk,KeyType=RANGE \
+  --billing-mode PAY_PER_REQUEST \
+  --region us-east-1
+```
+
+> **Note:** Brand settings will be initialized with defaults when you first access `/settings/brands` in the UI.
 
 #### Configure SES
 
