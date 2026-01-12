@@ -6,6 +6,7 @@ import {
   updateNewsletterStatus,
   addNewsletterHistory,
 } from '@/lib/aws/dynamodb-client';
+import { emailService } from '@/lib/email/email-service';
 import { randomUUID } from 'crypto';
 
 // POST /api/newsletter/schedule - Schedule a newsletter for sending
@@ -100,10 +101,13 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    // In production, you would send emails here
-    // For now, we'll just update the status
-    // import { sendNewsletter } from '@/lib/aws/ses-client';
-    // await sendNewsletter(recipientList, newsletter.subject, newsletter.htmlContent, newsletter.textContent);
+    // Send newsletter to all recipients
+    await emailService.sendNewsletter(
+      recipientList,
+      newsletter.subject,
+      newsletter.htmlContent,
+      newsletter.textContent
+    );
 
     // Update newsletter status to sent
     await updateNewsletterStatus(newsletterId, 'sent', {

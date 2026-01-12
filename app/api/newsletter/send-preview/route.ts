@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/auth-config';
-import { sendNewsletterPreview } from '@/lib/aws/ses-client';
+import { emailService } from '@/lib/email/email-service';
 import { getNewsletter, addNewsletterHistory } from '@/lib/aws/dynamodb-client';
 import { randomUUID } from 'crypto';
 
@@ -35,8 +35,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Newsletter not found' }, { status: 404 });
     }
 
-    // Send preview email via SES
-    await sendNewsletterPreview(
+    // Send preview email
+    await emailService.sendNewsletterPreview(
       recipientEmail,
       newsletter.subject,
       newsletter.htmlContent

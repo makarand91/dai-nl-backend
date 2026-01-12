@@ -12,12 +12,14 @@ A comprehensive newsletter management backend application built with Next.js, AW
 - **DynamoDB History**: Track all newsletter actions and maintain complete history
 - **Cognito Authentication**: Secure access with AWS Cognito SSO
 - **Responsive UI**: Modern, responsive interface built with Tailwind CSS
+- **Modular Email System**: Switch between email providers (Mailjet, SES, etc.) with one config change
 
 ## Tech Stack
 
 - **Frontend**: Next.js 15, React, Tailwind CSS
 - **Authentication**: NextAuth.js with AWS Cognito
-- **Cloud Services**: AWS S3, DynamoDB, SES, Cognito
+- **Cloud Services**: AWS S3 (storage), DynamoDB (database), Cognito (auth)
+- **Email Providers**: Mailjet (default), AWS SES, or easily add others
 - **CMS**: Strapi
 - **Language**: TypeScript
 
@@ -46,7 +48,14 @@ dai-nl-backend/
 │   ├── aws/
 │   │   ├── s3-client.ts          # S3 operations
 │   │   ├── dynamodb-client.ts    # DynamoDB operations
-│   │   └── ses-client.ts         # SES email operations
+│   │   └── ses-client.ts         # Legacy SES (use lib/email instead)
+│   ├── email/
+│   │   ├── email-service.ts      # Email service factory
+│   │   ├── types.ts              # Email types
+│   │   ├── providers/
+│   │   │   ├── mailjet.ts        # Mailjet provider
+│   │   │   └── ses.ts            # AWS SES provider
+│   │   └── ADDING_PROVIDERS.md   # Guide to add providers
 │   ├── auth/
 │   │   └── auth-config.ts        # NextAuth configuration
 │   ├── types/
@@ -125,7 +134,43 @@ aws dynamodb create-table \
 3. Configure callback URLs (e.g., `http://localhost:3000/api/auth/callback/cognito`)
 4. Note the User Pool ID, Client ID, and Client Secret
 
-### 4. Generate NextAuth Secret
+### 4. Configure Email Provider
+
+The application uses a modular email system. Choose your preferred provider:
+
+#### Option A: Mailjet (Recommended - Default)
+
+1. Sign up at [Mailjet](https://www.mailjet.com/)
+2. Get your API Key and Secret Key from the dashboard
+3. Verify your sender email/domain
+4. Add to `.env.local`:
+   ```env
+   EMAIL_PROVIDER=mailjet
+   MAILJET_API_KEY=your-api-key
+   MAILJET_API_SECRET=your-api-secret
+   MAILJET_FROM_EMAIL=noreply@yourdomain.com
+   MAILJET_FROM_NAME=Newsletter System
+   ```
+
+#### Option B: AWS SES
+
+1. Verify your sender email in AWS SES console
+2. If in sandbox mode, verify recipient emails
+3. Request production access for unrestricted sending
+4. Add to `.env.local`:
+   ```env
+   EMAIL_PROVIDER=ses
+   SES_FROM_EMAIL=noreply@yourdomain.com
+   SES_REGION=us-east-1
+   ```
+
+#### Option C: Add Your Own Provider
+
+See `lib/email/ADDING_PROVIDERS.md` for a complete guide on adding SendGrid, Resend, Postmark, or any other email service.
+
+**Switching Providers**: Simply change the `EMAIL_PROVIDER` environment variable and update the corresponding credentials. No code changes needed!
+
+### 5. Generate NextAuth Secret
 
 ```bash
 openssl rand -base64 32
@@ -133,7 +178,7 @@ openssl rand -base64 32
 
 Add this to your `.env.local` as `NEXTAUTH_SECRET`.
 
-### 5. Run Development Server
+### 6. Run Development Server
 
 ```bash
 npm run dev
