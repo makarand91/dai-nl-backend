@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "init-settings": "tsx scripts/init-settings-dynamodb.ts"
+    "init-settings": "tsx scripts/init-settings-dynamodb.ts",
+    "test-mailjet": "tsx scripts/test-mailjet.ts"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.966.0",
@@ -30,6 +31,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv": "^17.2.3",
     "eslint": "^9",
     "eslint-config-next": "16.1.1",
     "tailwindcss": "^4",
