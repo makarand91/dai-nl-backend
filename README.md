@@ -121,6 +121,47 @@ AWS_SECRET_ACCESS_KEY=your-secret-key
 aws s3 mb s3://newsletter-storage --region us-east-1
 ```
 
+**Using Subfolders/Prefixes (Recommended):**
+
+You can use a single S3 bucket for multiple environments or applications by setting the `S3_PREFIX` environment variable:
+
+```env
+# Development
+S3_BUCKET_NAME=shared-storage
+S3_PREFIX=dev/newsletters
+
+# Staging
+S3_BUCKET_NAME=shared-storage
+S3_PREFIX=staging/newsletters
+
+# Production
+S3_BUCKET_NAME=shared-storage
+S3_PREFIX=prod/newsletters
+```
+
+**File organization:**
+```
+s3://shared-storage/
+├── dev/
+│   └── newsletters/
+│       └── newsletter-123/
+│           └── 1234567890.html
+├── staging/
+│   └── newsletters/
+│       └── newsletter-456/
+│           └── 1234567891.html
+└── prod/
+    └── newsletters/
+        └── newsletter-789/
+            └── 1234567892.html
+```
+
+**Benefits:**
+- ✅ One bucket for all environments
+- ✅ Easier permission management
+- ✅ Cost-effective
+- ✅ Clear separation of environments
+
 #### Create DynamoDB Tables
 
 **Newsletters Table:**

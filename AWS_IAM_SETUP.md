@@ -87,6 +87,49 @@ Create an IAM policy with the following permissions:
 }
 ```
 
+### Using S3 Prefixes/Subfolders
+
+If you're using the `S3_PREFIX` environment variable to organize files in subfolders (e.g., `prod/newsletters`), you can scope IAM permissions to only that prefix:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "S3NewsletterStorageWithPrefix",
+      "Effect": "Allow",
+      "Action": [
+        "s3:PutObject",
+        "s3:GetObject",
+        "s3:DeleteObject"
+      ],
+      "Resource": [
+        "arn:aws:s3:::shared-storage/prod/newsletters/*"
+      ]
+    },
+    {
+      "Sid": "S3ListBucket",
+      "Effect": "Allow",
+      "Action": [
+        "s3:ListBucket"
+      ],
+      "Resource": "arn:aws:s3:::shared-storage",
+      "Condition": {
+        "StringLike": {
+          "s3:prefix": ["prod/newsletters/*"]
+        }
+      }
+    }
+  ]
+}
+```
+
+**Benefits:**
+- Production environment can only access `prod/newsletters/*`
+- Staging environment can only access `staging/newsletters/*`
+- Better isolation between environments
+- Single bucket with fine-grained access control
+
 ## Setup by Environment
 
 ### Running on AWS EC2

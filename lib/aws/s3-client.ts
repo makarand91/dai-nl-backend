@@ -28,11 +28,33 @@ if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) {
 
 const s3Client = new S3Client(s3ClientConfig);
 
+/**
+ * Build S3 key with optional prefix/subfolder
+ *
+ * Examples:
+ * - No prefix: newsletters/abc-123/1234567890.html
+ * - With prefix "prod": prod/newsletters/abc-123/1234567890.html
+ * - With prefix "myapp/prod": myapp/prod/newsletters/abc-123/1234567890.html
+ */
+function buildS3Key(path: string): string {
+  const prefix = process.env.S3_PREFIX || process.env.S3_FOLDER_PREFIX || '';
+
+  if (!prefix) {
+    return path;
+  }
+
+  // Normalize prefix: remove leading/trailing slashes
+  const normalizedPrefix = prefix.replace(/^\/+|\/+$/g, '');
+
+  return `${normalizedPrefix}/${path}`;
+}
+
 export async function uploadNewsletterToS3(
   newsletterId: string,
   htmlContent: string
 ): Promise<{ key: string; url: string }> {
-  const key = `newsletters/${newsletterId}/${Date.now()}.html`;
+  const relativePath = `newsletters/${newsletterId}/${Date.now()}.html`;
+  const key = buildS3Key(relativePath);
   const bucketName = process.env.S3_BUCKET_NAME!;
 
   const command = new PutObjectCommand({
