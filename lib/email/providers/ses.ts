@@ -4,6 +4,15 @@ import { IEmailProvider, EmailOptions } from '../types';
 /**
  * AWS SES Email Provider
  *
+ * Uses AWS SDK's default credential provider chain:
+ * 1. Environment variables (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
+ * 2. Shared credentials file (~/.aws/credentials)
+ * 3. IAM role for EC2 instances
+ * 4. IAM role for ECS tasks
+ * 5. IAM role for Lambda functions
+ *
+ * For production on AWS, use IAM roles instead of hardcoded credentials.
+ *
  * Documentation: https://docs.aws.amazon.com/ses/
  */
 export class SESProvider implements IEmailProvider {
@@ -11,14 +20,19 @@ export class SESProvider implements IEmailProvider {
   private defaultFromEmail: string;
 
   constructor() {
-    this.client = new SESClient({
-      region: process.env.SES_REGION || process.env.AWS_REGION,
-      credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-      },
-    });
+    const sesClientConfig: any = {
+      region: process.env.SES_REGION || process.env.AWS_REGION || 'us-east-1',
+    };
 
+    // Only add explicit credentials if provided (for local development)
+    if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) {
+      sesClientConfig.credentials = {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+      };
+    }
+
+    this.client = new SESClient(sesClientConfig);
     this.defaultFromEmail = process.env.SES_FROM_EMAIL || 'noreply@yourdomain.com';
   }
 

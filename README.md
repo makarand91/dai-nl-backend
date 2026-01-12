@@ -87,9 +87,33 @@ Copy `.env.example` to `.env.local`:
 cp .env.example .env.local
 ```
 
-Update the environment variables with your AWS and Strapi credentials.
+Update the environment variables with your configuration.
+
+**Important:** AWS credentials are **optional**. The application uses AWS SDK's credential provider chain:
+- **Production (on AWS):** Use IAM roles - No credentials needed! ✅
+- **Local Development:** Use access keys in `.env.local`
+
+See `AWS_IAM_SETUP.md` for detailed IAM role configuration.
 
 ### 3. AWS Setup
+
+#### Configure AWS Authentication
+
+**Option A: IAM Roles (Recommended for Production)**
+
+When running on AWS infrastructure (EC2, ECS, Lambda, Amplify), attach an IAM role with the required permissions. No credentials needed in environment variables!
+
+See `AWS_IAM_SETUP.md` for complete instructions.
+
+**Option B: Access Keys (Local Development Only)**
+
+For local development, add to `.env.local`:
+```env
+AWS_ACCESS_KEY_ID=your-access-key
+AWS_SECRET_ACCESS_KEY=your-secret-key
+```
+
+⚠️ **Never commit these to version control!**
 
 #### Create S3 Bucket
 

@@ -9,14 +9,32 @@ import {
 } from '@aws-sdk/lib-dynamodb';
 import { Newsletter, NewsletterHistory, NewsletterPreview } from '../types/newsletter';
 
-const client = new DynamoDBClient({
-  region: process.env.AWS_REGION,
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-  },
-});
+/**
+ * DynamoDB Client for Newsletter Management
+ *
+ * Uses AWS SDK's default credential provider chain:
+ * 1. Environment variables (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
+ * 2. Shared credentials file (~/.aws/credentials)
+ * 3. IAM role for EC2 instances
+ * 4. IAM role for ECS tasks
+ * 5. IAM role for Lambda functions
+ *
+ * For production on AWS, use IAM roles instead of hardcoded credentials.
+ */
 
+const dynamoClientConfig: any = {
+  region: process.env.AWS_REGION || 'us-east-1',
+};
+
+// Only add explicit credentials if provided (for local development)
+if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) {
+  dynamoClientConfig.credentials = {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  };
+}
+
+const client = new DynamoDBClient(dynamoClientConfig);
 const docClient = DynamoDBDocumentClient.from(client);
 
 // Newsletter Operations
