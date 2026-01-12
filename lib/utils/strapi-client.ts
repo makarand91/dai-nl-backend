@@ -44,9 +44,9 @@ export async function getAllStrapiNewsletters(): Promise<StrapiNewsletterContent
  * Convert Strapi newsletter to HTML using template system
  * Automatically selects template based on brand mapping
  */
-export function convertStrapiNewsletterToHTML(newsletter: StrapiNewsletterContent): string {
+export async function convertStrapiNewsletterToHTML(newsletter: StrapiNewsletterContent): Promise<string> {
   // Get the appropriate template based on brand
-  const templateId = getTemplateForBrand(newsletter.brand);
+  const templateId = await getTemplateForBrand(newsletter.brand);
   const template = getTemplate(templateId);
 
   if (!template) {

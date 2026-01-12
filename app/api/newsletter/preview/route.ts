@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
       // Use IssueDate as title if no title provided
       finalTitle = title || `Newsletter - ${strapiContent.IssueDate}`;
       finalSubject = strapiContent.subject || subject || `Newsletter ${strapiContent.IssueDate}`;
-      finalHtmlContent = convertStrapiNewsletterToHTML(strapiContent);
+      finalHtmlContent = await convertStrapiNewsletterToHTML(strapiContent);
     }
 
     if (!finalHtmlContent || !finalTitle || !finalSubject) {

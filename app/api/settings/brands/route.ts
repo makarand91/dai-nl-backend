@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const brandSettings = loadBrandSettings();
+    const brandSettings = await loadBrandSettings();
     const availableTemplates = getAllTemplates().map((t) => ({
       id: t.id,
       name: t.name,
@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Save settings
-    saveBrandSettings(brandSettings);
+    await saveBrandSettings(brandSettings);
     clearBrandSettingsCache();
 
     return NextResponse.json({

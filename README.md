@@ -5,11 +5,13 @@ A comprehensive newsletter management backend application built with Next.js, AW
 ## Features
 
 - **Strapi CMS Integration**: Fetch newsletter content directly from Strapi CMS
+- **Newsletter Templates**: Auto-generate HTML from templates based on brand
+- **Brand Settings Management**: Configure brand-to-template mappings via UI
 - **Newsletter Preview**: Create and preview newsletters before sending
 - **Preview Emails**: Send test emails to verify newsletter appearance
 - **Scheduling**: Schedule newsletters for future delivery
 - **AWS S3 Storage**: Store newsletter HTML for browser-based viewing
-- **DynamoDB History**: Track all newsletter actions and maintain complete history
+- **DynamoDB Storage**: All data stored in DynamoDB (newsletters, history, settings)
 - **Cognito Authentication**: Secure access with AWS Cognito SSO
 - **Responsive UI**: Modern, responsive interface built with Tailwind CSS
 - **Modular Email System**: Switch between email providers (Mailjet, SES, etc.) with one config change
@@ -185,6 +187,25 @@ aws dynamodb create-table \
     AttributeName=timestamp,KeyType=RANGE \
   --billing-mode PAY_PER_REQUEST
 ```
+
+**Brand Settings Table:**
+```bash
+# Easiest way - use the automated script:
+npm run init-settings
+
+# Or create manually:
+aws dynamodb create-table \
+  --table-name newsletter-settings \
+  --attribute-definitions \
+    AttributeName=pk,AttributeType=S \
+    AttributeName=sk,AttributeType=S \
+  --key-schema \
+    AttributeName=pk,KeyType=HASH \
+    AttributeName=sk,KeyType=RANGE \
+  --billing-mode PAY_PER_REQUEST
+```
+
+> **Tip:** The `npm run init-settings` command will create the table, migrate any existing JSON data, and initialize with defaults. See `docs/BRAND_SETTINGS_SETUP.md` for details.
 
 #### Configure SES
 

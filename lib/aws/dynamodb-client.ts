@@ -37,6 +37,9 @@ if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) {
 const client = new DynamoDBClient(dynamoClientConfig);
 const docClient = DynamoDBDocumentClient.from(client);
 
+// Export the DynamoDB client for use in other modules
+export const dynamoDb = docClient;
+
 // Newsletter Operations
 export async function saveNewsletter(newsletter: Newsletter): Promise<void> {
   const command = new PutCommand({

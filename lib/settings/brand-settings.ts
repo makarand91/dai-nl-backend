@@ -2,11 +2,13 @@
  * Brand to Template Mapping Configuration
  *
  * This file maps brand identifiers to newsletter templates.
- * Brand mappings are stored in data/brand-settings.json and can be updated via API.
+ * Brand mappings are stored in DynamoDB for better scalability and AWS integration.
  */
 
-import fs from 'fs';
-import path from 'path';
+import {
+  loadBrandSettingsFromDynamoDB,
+  saveBrandSettingsToDynamoDB,
+} from '../aws/dynamodb-settings';
 
 export interface BrandSettings {
   templateId: string;
@@ -18,48 +20,49 @@ export interface BrandSettings {
   };
 }
 
-const SETTINGS_FILE = path.join(process.cwd(), 'data', 'brand-settings.json');
-
-// In-memory cache
+// In-memory cache with TTL
 let cachedSettings: Record<string, BrandSettings> | null = null;
+let cacheTimestamp: number | null = null;
+const CACHE_TTL_MS = 60000; // 1 minute cache
 
 /**
- * Load brand settings from JSON file
+ * Load brand settings from DynamoDB (with cache)
  */
-export function loadBrandSettings(): Record<string, BrandSettings> {
-  if (cachedSettings) {
+export async function loadBrandSettings(): Promise<Record<string, BrandSettings>> {
+  const now = Date.now();
+
+  // Return cached settings if still valid
+  if (cachedSettings && cacheTimestamp && now - cacheTimestamp < CACHE_TTL_MS) {
     return cachedSettings;
   }
 
   try {
-    if (fs.existsSync(SETTINGS_FILE)) {
-      const fileContent = fs.readFileSync(SETTINGS_FILE, 'utf-8');
-      cachedSettings = JSON.parse(fileContent);
-      return cachedSettings!;
-    }
+    cachedSettings = await loadBrandSettingsFromDynamoDB();
+    cacheTimestamp = now;
+    return cachedSettings;
   } catch (error) {
     console.error('Error loading brand settings:', error);
+    // Return cached settings even if expired, as fallback
+    if (cachedSettings) {
+      return cachedSettings;
+    }
+    // Final fallback
+    return {
+      default: {
+        templateId: 'default',
+      },
+    };
   }
-
-  // Default fallback
-  return {
-    default: {
-      templateId: 'default',
-    },
-  };
 }
 
 /**
- * Save brand settings to JSON file
+ * Save brand settings to DynamoDB
  */
-export function saveBrandSettings(settings: Record<string, BrandSettings>): void {
+export async function saveBrandSettings(settings: Record<string, BrandSettings>): Promise<void> {
   try {
-    const dir = path.dirname(SETTINGS_FILE);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    fs.writeFileSync(SETTINGS_FILE, JSON.stringify(settings, null, 2), 'utf-8');
+    await saveBrandSettingsToDynamoDB(settings);
     cachedSettings = settings; // Update cache
+    cacheTimestamp = Date.now();
   } catch (error) {
     console.error('Error saving brand settings:', error);
     throw new Error('Failed to save brand settings');
@@ -71,20 +74,21 @@ export function saveBrandSettings(settings: Record<string, BrandSettings>): void
  */
 export function clearBrandSettingsCache(): void {
   cachedSettings = null;
+  cacheTimestamp = null;
 }
 
 /**
  * Get brand template map
  */
-export function getBrandTemplateMap(): Record<string, BrandSettings> {
-  return loadBrandSettings();
+export async function getBrandTemplateMap(): Promise<Record<string, BrandSettings>> {
+  return await loadBrandSettings();
 }
 
 /**
  * Get template ID for a brand
  */
-export function getTemplateForBrand(brand?: string | null): string {
-  const brandTemplateMap = loadBrandSettings();
+export async function getTemplateForBrand(brand?: string | null): Promise<string> {
+  const brandTemplateMap = await loadBrandSettings();
 
   if (!brand) {
     return brandTemplateMap.default.templateId;
@@ -102,8 +106,8 @@ export function getTemplateForBrand(brand?: string | null): string {
 /**
  * Get brand settings
  */
-export function getBrandSettings(brand?: string | null): BrandSettings {
-  const brandTemplateMap = loadBrandSettings();
+export async function getBrandSettings(brand?: string | null): Promise<BrandSettings> {
+  const brandTemplateMap = await loadBrandSettings();
 
   if (!brand) {
     return brandTemplateMap.default;
