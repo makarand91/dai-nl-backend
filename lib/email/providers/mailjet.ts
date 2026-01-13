@@ -99,6 +99,15 @@ export class MailjetProvider implements IEmailProvider {
    */
   async createAndScheduleCampaign(options: CampaignOptions): Promise<CampaignResult> {
     try {
+      // Mailjet requires ContactsListID to be an integer
+      const listIdInt = parseInt(options.listId, 10);
+      if (isNaN(listIdInt)) {
+        throw new Error(
+          `Invalid Mailjet list ID: "${options.listId}". Mailjet requires a numeric Contact List ID (e.g., "123456"). ` +
+          `Find your list ID at: https://app.mailjet.com/contacts/lists`
+        );
+      }
+
       // Step 1: Create campaign draft
       const draftResponse: any = await this.client
         .post('campaigndraft', { version: 'v3' })
@@ -107,7 +116,7 @@ export class MailjetProvider implements IEmailProvider {
           Sender: options.from || this.defaultFromEmail,
           SenderName: options.fromName || this.defaultFromName,
           Subject: options.subject,
-          ContactsListID: options.listId,
+          ContactsListID: listIdInt,
           Title: options.campaignName || `Campaign - ${options.subject}`,
         });
 

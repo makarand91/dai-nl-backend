@@ -62,10 +62,17 @@ export default function NewsletterList() {
           >
             <div className="flex justify-between items-start mb-4">
               <div className="flex-1">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  {newsletter.title}
-                </h3>
-                <p className="text-sm text-gray-600 mt-1">{newsletter.subject}</p>
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {newsletter.title}
+                  </h3>
+                  {newsletter.brand && (
+                    <span className="px-2 py-0.5 bg-purple-100 text-purple-800 text-xs font-semibold rounded-full">
+                      {newsletter.brand}
+                    </span>
+                  )}
+                </div>
+                <p className="text-sm text-gray-600">{newsletter.subject}</p>
               </div>
               <span
                 className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
@@ -76,13 +83,17 @@ export default function NewsletterList() {
               </span>
             </div>
 
+            {newsletter.status === 'scheduled' && newsletter.scheduledFor && (
+              <div className="mb-3 p-2 bg-blue-50 border border-blue-200 rounded text-sm">
+                <span className="font-semibold text-blue-900">📅 Scheduled: </span>
+                <span className="text-blue-800">
+                  {new Date(newsletter.scheduledFor).toLocaleString()}
+                </span>
+              </div>
+            )}
+
             <div className="text-sm text-gray-500 space-y-1">
               <p>Created: {new Date(newsletter.createdAt).toLocaleString()}</p>
-              {newsletter.scheduledFor && (
-                <p>
-                  Scheduled for: {new Date(newsletter.scheduledFor).toLocaleString()}
-                </p>
-              )}
               {newsletter.sentAt && (
                 <p>Sent: {new Date(newsletter.sentAt).toLocaleString()}</p>
               )}

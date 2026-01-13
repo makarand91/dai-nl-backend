@@ -144,9 +144,21 @@ export default function NewsletterDetailPage() {
 
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
           <div className="flex justify-between items-start mb-4">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">{newsletter.title}</h1>
-              <p className="text-gray-600 mt-1">{newsletter.subject}</p>
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                <h1 className="text-2xl font-bold text-gray-900">{newsletter.title}</h1>
+                {newsletter.brand && (
+                  <span className="px-2.5 py-0.5 bg-purple-100 text-purple-800 text-xs font-semibold rounded-full">
+                    {newsletter.brand}
+                  </span>
+                )}
+              </div>
+              <p className="text-gray-600">{newsletter.subject}</p>
+              {newsletter.campaignId && (
+                <p className="text-xs text-gray-500 mt-1">
+                  Campaign ID: {newsletter.campaignId}
+                </p>
+              )}
             </div>
             <span
               className={`px-3 py-1 rounded-full text-sm font-medium ${
@@ -163,6 +175,30 @@ export default function NewsletterDetailPage() {
             </span>
           </div>
 
+          {newsletter.status === 'scheduled' && newsletter.scheduledFor && (
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+              <div className="flex items-center">
+                <svg
+                  className="w-5 h-5 text-blue-600 mr-2"
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                <div>
+                  <span className="font-semibold text-blue-900">Scheduled for: </span>
+                  <span className="text-blue-800">
+                    {new Date(newsletter.scheduledFor).toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-4 text-sm text-gray-600 mb-6">
             <div>
               <strong>Created:</strong> {new Date(newsletter.createdAt).toLocaleString()}
@@ -170,14 +206,8 @@ export default function NewsletterDetailPage() {
             <div>
               <strong>Updated:</strong> {new Date(newsletter.updatedAt).toLocaleString()}
             </div>
-            {newsletter.scheduledFor && (
-              <div>
-                <strong>Scheduled for:</strong>{' '}
-                {new Date(newsletter.scheduledFor).toLocaleString()}
-              </div>
-            )}
             {newsletter.sentAt && (
-              <div>
+              <div className="col-span-2">
                 <strong>Sent:</strong> {new Date(newsletter.sentAt).toLocaleString()}
               </div>
             )}
