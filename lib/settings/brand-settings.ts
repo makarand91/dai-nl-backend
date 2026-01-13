@@ -13,6 +13,10 @@ import {
 export interface BrandSettings {
   templateId: string;
   defaultSubject?: string;
+  // Mailing list ID for Mailjet/MailWizz
+  listId?: string;
+  // Campaign ID for tracking
+  campaignId?: string;
   customization?: {
     primaryColor?: string;
     logo?: string;

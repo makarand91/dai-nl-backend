@@ -7,6 +7,8 @@ import { useEffect, useState } from 'react';
 interface BrandSettings {
   templateId: string;
   defaultSubject?: string;
+  listId?: string;
+  campaignId?: string;
   customization?: {
     primaryColor?: string;
     logo?: string;
@@ -36,6 +38,8 @@ export default function BrandSettingsPage() {
     brandId: '',
     templateId: 'default',
     defaultSubject: '',
+    listId: '',
+    campaignId: '',
     primaryColor: '',
     logo: '',
   });
@@ -104,6 +108,8 @@ export default function BrandSettingsPage() {
     newSettings[formData.brandId] = {
       templateId: formData.templateId,
       ...(formData.defaultSubject && { defaultSubject: formData.defaultSubject }),
+      ...(formData.listId && { listId: formData.listId }),
+      ...(formData.campaignId && { campaignId: formData.campaignId }),
       ...(formData.primaryColor || formData.logo
         ? {
             customization: {
@@ -120,6 +126,8 @@ export default function BrandSettingsPage() {
       brandId: '',
       templateId: 'default',
       defaultSubject: '',
+      listId: '',
+      campaignId: '',
       primaryColor: '',
       logo: '',
     });
@@ -133,6 +141,8 @@ export default function BrandSettingsPage() {
       brandId,
       templateId: settings.templateId,
       defaultSubject: settings.defaultSubject || '',
+      listId: settings.listId || '',
+      campaignId: settings.campaignId || '',
       primaryColor: settings.customization?.primaryColor || '',
       logo: settings.customization?.logo || '',
     });
@@ -157,6 +167,8 @@ export default function BrandSettingsPage() {
       brandId: '',
       templateId: 'default',
       defaultSubject: '',
+      listId: '',
+      campaignId: '',
       primaryColor: '',
       logo: '',
     });
@@ -250,6 +262,32 @@ export default function BrandSettingsPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
+                Mailing List ID (Optional)
+              </label>
+              <input
+                type="text"
+                value={formData.listId}
+                onChange={(e) => setFormData({ ...formData, listId: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="e.g., 123456 (Mailjet/MailWizz list ID)"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Campaign ID (Optional)
+              </label>
+              <input
+                type="text"
+                value={formData.campaignId}
+                onChange={(e) => setFormData({ ...formData, campaignId: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="e.g., campaign-2024-q1"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Primary Color (Optional)
               </label>
               <input
@@ -305,10 +343,16 @@ export default function BrandSettingsPage() {
                   Template
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Default Subject
+                  List ID
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Customization
+                  Campaign ID
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Subject
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Custom
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
@@ -326,6 +370,12 @@ export default function BrandSettingsPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                     {settings.templateId}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                    {settings.listId || '-'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                    {settings.campaignId || '-'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                     {settings.defaultSubject || '-'}

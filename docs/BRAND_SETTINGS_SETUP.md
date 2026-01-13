@@ -2,6 +2,13 @@
 
 Brand settings are now stored in DynamoDB instead of JSON files for better scalability, concurrency handling, and AWS integration.
 
+Brand settings include:
+- **Template ID**: Which newsletter template to use
+- **List ID**: Mailjet/MailWizz mailing list ID for sending
+- **Campaign ID**: Campaign identifier for tracking
+- **Default Subject**: Optional default email subject
+- **Customization**: Colors, logos, etc.
+
 ## Table Structure
 
 **Table Name:** `newsletter-settings` (configurable via `DYNAMODB_SETTINGS_TABLE` env variable)
