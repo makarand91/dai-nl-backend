@@ -73,6 +73,9 @@ export async function POST(request: NextRequest) {
         textBody: newsletter.textContent,
         campaignName: newsletter.title,
         scheduleAt: scheduledDate,
+        // Use brand's sender email/name if configured
+        from: brandSettings.senderEmail,
+        fromName: brandSettings.senderName,
       }
     );
 

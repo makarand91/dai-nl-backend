@@ -19,6 +19,10 @@ export interface BrandSettings {
   listId?: string;
   // Campaign ID for tracking
   campaignId?: string;
+  // Sender email (must be verified in Mailjet/MailWizz)
+  senderEmail?: string;
+  // Sender name (display name for emails)
+  senderName?: string;
   customization?: {
     primaryColor?: string;
     logo?: string;

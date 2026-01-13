@@ -108,12 +108,20 @@ export class MailjetProvider implements IEmailProvider {
         );
       }
 
+      // Validate sender email
+      const senderEmail = options.from || this.defaultFromEmail;
+      if (!senderEmail) {
+        throw new Error(
+          'Sender email is required. Set MAILJET_FROM_EMAIL in your environment variables.'
+        );
+      }
+
       // Step 1: Create campaign draft
       const draftResponse: any = await this.client
         .post('campaigndraft', { version: 'v3' })
         .request({
           Locale: 'en_US',
-          Sender: options.from || this.defaultFromEmail,
+          Sender: senderEmail,
           SenderName: options.fromName || this.defaultFromName,
           Subject: options.subject,
           ContactsListID: listIdInt,
@@ -158,11 +166,18 @@ export class MailjetProvider implements IEmailProvider {
       }
     } catch (error: any) {
       console.error('Mailjet campaign error:', error);
-      throw new Error(
-        `Failed to create/schedule campaign: ${
-          error.response?.body?.ErrorMessage || error.message || 'Unknown error'
-        }`
-      );
+
+      // Provide helpful error messages for common issues
+      const errorMessage = error.ErrorMessage || error.response?.body?.ErrorMessage || error.message || 'Unknown error';
+
+      if (errorMessage.includes('valid and active sender')) {
+        throw new Error(
+          `Sender email verification required. The email address "${options.from || this.defaultFromEmail}" must be verified in Mailjet. ` +
+          `Go to https://app.mailjet.com/account/sender to add and verify your sender email address.`
+        );
+      }
+
+      throw new Error(`Failed to create/schedule campaign: ${errorMessage}`);
     }
   }
 }

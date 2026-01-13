@@ -10,6 +10,8 @@ interface BrandSettings {
   emailProvider?: 'mailjet' | 'mailwizz';
   listId?: string;
   campaignId?: string;
+  senderEmail?: string;
+  senderName?: string;
   customization?: {
     primaryColor?: string;
     logo?: string;
@@ -42,6 +44,8 @@ export default function BrandSettingsPage() {
     emailProvider: 'mailjet' as 'mailjet' | 'mailwizz',
     listId: '',
     campaignId: '',
+    senderEmail: '',
+    senderName: '',
     primaryColor: '',
     logo: '',
   });
@@ -113,6 +117,8 @@ export default function BrandSettingsPage() {
       ...(formData.emailProvider && { emailProvider: formData.emailProvider }),
       ...(formData.listId && { listId: formData.listId }),
       ...(formData.campaignId && { campaignId: formData.campaignId }),
+      ...(formData.senderEmail && { senderEmail: formData.senderEmail }),
+      ...(formData.senderName && { senderName: formData.senderName }),
       ...(formData.primaryColor || formData.logo
         ? {
             customization: {
@@ -132,6 +138,8 @@ export default function BrandSettingsPage() {
       emailProvider: 'mailjet',
       listId: '',
       campaignId: '',
+      senderEmail: '',
+      senderName: '',
       primaryColor: '',
       logo: '',
     });
@@ -148,6 +156,8 @@ export default function BrandSettingsPage() {
       emailProvider: settings.emailProvider || 'mailjet',
       listId: settings.listId || '',
       campaignId: settings.campaignId || '',
+      senderEmail: settings.senderEmail || '',
+      senderName: settings.senderName || '',
       primaryColor: settings.customization?.primaryColor || '',
       logo: settings.customization?.logo || '',
     });
@@ -175,6 +185,8 @@ export default function BrandSettingsPage() {
       emailProvider: 'mailjet',
       listId: '',
       campaignId: '',
+      senderEmail: '',
+      senderName: '',
       primaryColor: '',
       logo: '',
     });
@@ -303,6 +315,35 @@ export default function BrandSettingsPage() {
                 onChange={(e) => setFormData({ ...formData, campaignId: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="e.g., campaign-2024-q1"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Sender Email (Optional)
+              </label>
+              <input
+                type="email"
+                value={formData.senderEmail}
+                onChange={(e) => setFormData({ ...formData, senderEmail: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="e.g., newsletter@yourbrand.com"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Must be verified in Mailjet/MailWizz
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Sender Name (Optional)
+              </label>
+              <input
+                type="text"
+                value={formData.senderName}
+                onChange={(e) => setFormData({ ...formData, senderName: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="e.g., Your Brand Newsletter"
               />
             </div>
 
