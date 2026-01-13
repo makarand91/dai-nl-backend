@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 interface BrandSettings {
   templateId: string;
   defaultSubject?: string;
+  emailProvider?: 'mailjet' | 'mailwizz';
   listId?: string;
   campaignId?: string;
   customization?: {
@@ -38,6 +39,7 @@ export default function BrandSettingsPage() {
     brandId: '',
     templateId: 'default',
     defaultSubject: '',
+    emailProvider: 'mailjet' as 'mailjet' | 'mailwizz',
     listId: '',
     campaignId: '',
     primaryColor: '',
@@ -108,6 +110,7 @@ export default function BrandSettingsPage() {
     newSettings[formData.brandId] = {
       templateId: formData.templateId,
       ...(formData.defaultSubject && { defaultSubject: formData.defaultSubject }),
+      ...(formData.emailProvider && { emailProvider: formData.emailProvider }),
       ...(formData.listId && { listId: formData.listId }),
       ...(formData.campaignId && { campaignId: formData.campaignId }),
       ...(formData.primaryColor || formData.logo
@@ -126,6 +129,7 @@ export default function BrandSettingsPage() {
       brandId: '',
       templateId: 'default',
       defaultSubject: '',
+      emailProvider: 'mailjet',
       listId: '',
       campaignId: '',
       primaryColor: '',
@@ -141,6 +145,7 @@ export default function BrandSettingsPage() {
       brandId,
       templateId: settings.templateId,
       defaultSubject: settings.defaultSubject || '',
+      emailProvider: settings.emailProvider || 'mailjet',
       listId: settings.listId || '',
       campaignId: settings.campaignId || '',
       primaryColor: settings.customization?.primaryColor || '',
@@ -167,6 +172,7 @@ export default function BrandSettingsPage() {
       brandId: '',
       templateId: 'default',
       defaultSubject: '',
+      emailProvider: 'mailjet',
       listId: '',
       campaignId: '',
       primaryColor: '',
@@ -244,6 +250,20 @@ export default function BrandSettingsPage() {
                     {template.name} - {template.description}
                   </option>
                 ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Email Provider *
+              </label>
+              <select
+                value={formData.emailProvider}
+                onChange={(e) => setFormData({ ...formData, emailProvider: e.target.value as 'mailjet' | 'mailwizz' })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="mailjet">Mailjet</option>
+                <option value="mailwizz">MailWizz</option>
               </select>
             </div>
 
@@ -343,6 +363,9 @@ export default function BrandSettingsPage() {
                   Template
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Provider
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   List ID
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -370,6 +393,11 @@ export default function BrandSettingsPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                     {settings.templateId}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      {settings.emailProvider || 'mailjet'}
+                    </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                     {settings.listId || '-'}

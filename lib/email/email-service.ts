@@ -124,6 +124,25 @@ class EmailService {
 
     return provider.createAndScheduleCampaign(options);
   }
+
+  /**
+   * Create and schedule a campaign using a specific provider
+   * Allows overriding the default EMAIL_PROVIDER setting per-brand
+   */
+  async createAndScheduleCampaignWithProvider(
+    providerType: EmailProviderType,
+    options: CampaignOptions
+  ): Promise<CampaignResult> {
+    const provider = this.createProvider(providerType);
+
+    if (!provider.createAndScheduleCampaign) {
+      throw new Error(
+        `Campaign scheduling not supported by provider: ${providerType}`
+      );
+    }
+
+    return provider.createAndScheduleCampaign(options);
+  }
 }
 
 // Export singleton instance

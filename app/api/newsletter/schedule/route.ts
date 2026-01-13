@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Newsletter not found' }, { status: 404 });
     }
 
-    // Get brand settings to retrieve listId
+    // Get brand settings to retrieve listId and emailProvider
     if (!newsletter.brand) {
       return NextResponse.json(
         { error: 'Newsletter has no brand associated. Cannot schedule campaign.' },
@@ -60,15 +60,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create and schedule campaign with provider (Mailjet/MailWizz)
-    const campaignResult = await emailService.createAndScheduleCampaign({
-      listId: brandSettings.listId,
-      subject: newsletter.subject,
-      htmlBody: newsletter.htmlContent,
-      textBody: newsletter.textContent,
-      campaignName: newsletter.title,
-      scheduleAt: scheduledDate,
-    });
+    // Use brand's email provider, or fall back to global EMAIL_PROVIDER
+    const providerType = brandSettings.emailProvider || (process.env.EMAIL_PROVIDER as 'mailjet' | 'mailwizz') || 'mailjet';
+
+    // Create and schedule campaign with the brand's provider
+    const campaignResult = await emailService.createAndScheduleCampaignWithProvider(
+      providerType,
+      {
+        listId: brandSettings.listId,
+        subject: newsletter.subject,
+        htmlBody: newsletter.htmlContent,
+        textBody: newsletter.textContent,
+        campaignName: newsletter.title,
+        scheduleAt: scheduledDate,
+      }
+    );
 
     // Update newsletter with campaign ID and status
     newsletter.campaignId = campaignResult.campaignId;
