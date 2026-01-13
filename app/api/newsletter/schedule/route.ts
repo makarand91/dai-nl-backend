@@ -5,11 +5,13 @@ import {
   getNewsletter,
   updateNewsletterStatus,
   addNewsletterHistory,
+  saveNewsletter,
 } from '@/lib/aws/dynamodb-client';
 import { emailService } from '@/lib/email/email-service';
+import { getBrandSettings } from '@/lib/settings/brand-settings';
 import { randomUUID } from 'crypto';
 
-// POST /api/newsletter/schedule - Schedule a newsletter for sending
+// POST /api/newsletter/schedule - Schedule a newsletter campaign
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -18,7 +20,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { newsletterId, scheduledFor, recipientList } = body;
+    const { newsletterId, scheduledFor } = body;
 
     if (!newsletterId || !scheduledFor) {
       return NextResponse.json(
@@ -42,10 +44,39 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Newsletter not found' }, { status: 404 });
     }
 
-    // Update newsletter status to scheduled
-    await updateNewsletterStatus(newsletterId, 'scheduled', {
-      scheduledFor: scheduledDate.toISOString(),
+    // Get brand settings to retrieve listId
+    if (!newsletter.brand) {
+      return NextResponse.json(
+        { error: 'Newsletter has no brand associated. Cannot schedule campaign.' },
+        { status: 400 }
+      );
+    }
+
+    const brandSettings = await getBrandSettings(newsletter.brand);
+    if (!brandSettings.listId) {
+      return NextResponse.json(
+        { error: `No mailing list configured for brand: ${newsletter.brand}` },
+        { status: 400 }
+      );
+    }
+
+    // Create and schedule campaign with provider (Mailjet/MailWizz)
+    const campaignResult = await emailService.createAndScheduleCampaign({
+      listId: brandSettings.listId,
+      subject: newsletter.subject,
+      htmlBody: newsletter.htmlContent,
+      textBody: newsletter.textContent,
+      campaignName: newsletter.title,
+      scheduleAt: scheduledDate,
     });
+
+    // Update newsletter with campaign ID and status
+    newsletter.campaignId = campaignResult.campaignId;
+    newsletter.status = 'scheduled';
+    newsletter.scheduledFor = scheduledDate.toISOString();
+    newsletter.updatedAt = new Date().toISOString();
+
+    await saveNewsletter(newsletter);
 
     // Add to history
     await addNewsletterHistory({
@@ -55,20 +86,26 @@ export async function POST(request: NextRequest) {
       timestamp: new Date().toISOString(),
       metadata: {
         scheduledFor: scheduledDate.toISOString(),
-        recipientCount: recipientList?.length || 0,
+        campaignId: campaignResult.campaignId,
+        brand: newsletter.brand,
+        listId: brandSettings.listId,
       },
       userId: session.user?.email || undefined,
     });
 
     return NextResponse.json({
       success: true,
-      message: 'Newsletter scheduled successfully',
+      message: campaignResult.message || 'Newsletter campaign scheduled successfully',
       scheduledFor: scheduledDate.toISOString(),
+      campaignId: campaignResult.campaignId,
+      status: campaignResult.status,
     });
   } catch (error) {
-    console.error('Error scheduling newsletter:', error);
+    console.error('Error scheduling newsletter campaign:', error);
     return NextResponse.json(
-      { error: 'Failed to schedule newsletter' },
+      {
+        error: error instanceof Error ? error.message : 'Failed to schedule newsletter campaign'
+      },
       { status: 500 }
     );
   }

@@ -1,6 +1,7 @@
-import { IEmailProvider, EmailProviderType, EmailOptions } from './types';
+import { IEmailProvider, EmailProviderType, EmailOptions, CampaignOptions, CampaignResult } from './types';
 import { MailjetProvider } from './providers/mailjet';
 import { SESProvider } from './providers/ses';
+import { MailWizzProvider } from './providers/mailwizz';
 
 /**
  * Email Service Factory
@@ -34,6 +35,8 @@ class EmailService {
     switch (type) {
       case 'mailjet':
         return new MailjetProvider();
+      case 'mailwizz':
+        return new MailWizzProvider();
       case 'ses':
         return new SESProvider();
       case 'sendgrid':
@@ -104,6 +107,22 @@ class EmailService {
 
       await this.sendBatch(emails);
     }
+  }
+
+  /**
+   * Create and schedule a campaign for a mailing list
+   * Uses provider's Campaign API (Mailjet/MailWizz)
+   */
+  async createAndScheduleCampaign(options: CampaignOptions): Promise<CampaignResult> {
+    const provider = this.getProvider();
+
+    if (!provider.createAndScheduleCampaign) {
+      throw new Error(
+        `Campaign scheduling not supported by provider: ${process.env.EMAIL_PROVIDER}`
+      );
+    }
+
+    return provider.createAndScheduleCampaign(options);
   }
 }
 

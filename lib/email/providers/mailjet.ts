@@ -1,5 +1,5 @@
 import Mailjet from 'node-mailjet';
-import { IEmailProvider, EmailOptions } from '../types';
+import { IEmailProvider, EmailOptions, CampaignOptions, CampaignResult } from '../types';
 
 /**
  * Mailjet Email Provider
@@ -88,6 +88,70 @@ export class MailjetProvider implements IEmailProvider {
       throw new Error(
         `Failed to send batch emails via Mailjet: ${
           error instanceof Error ? error.message : 'Unknown error'
+        }`
+      );
+    }
+  }
+
+  /**
+   * Create and schedule a campaign for a Mailjet contact list
+   * Uses Mailjet Campaign API v3
+   */
+  async createAndScheduleCampaign(options: CampaignOptions): Promise<CampaignResult> {
+    try {
+      // Step 1: Create campaign draft
+      const draftResponse: any = await this.client
+        .post('campaigndraft', { version: 'v3' })
+        .request({
+          Locale: 'en_US',
+          Sender: options.from || this.defaultFromEmail,
+          SenderName: options.fromName || this.defaultFromName,
+          Subject: options.subject,
+          ContactsListID: options.listId,
+          Title: options.campaignName || `Campaign - ${options.subject}`,
+        });
+
+      const campaignId = draftResponse.body.Data[0].ID;
+
+      // Step 2: Set campaign content
+      await this.client
+        .post(`campaigndraft/${campaignId}/detailcontent`, { version: 'v3' })
+        .request({
+          'Html-part': options.htmlBody,
+          ...(options.textBody && { 'Text-part': options.textBody }),
+        });
+
+      // Step 3: Schedule or send immediately
+      if (options.scheduleAt && options.scheduleAt > new Date()) {
+        // Schedule for future
+        await this.client
+          .post(`campaigndraft/${campaignId}/schedule`, { version: 'v3' })
+          .request({
+            Date: options.scheduleAt.toISOString(),
+          });
+
+        return {
+          campaignId: String(campaignId),
+          status: 'scheduled',
+          message: `Campaign scheduled for ${options.scheduleAt.toISOString()}`,
+        };
+      } else {
+        // Send immediately
+        await this.client
+          .post(`campaigndraft/${campaignId}/send`, { version: 'v3' })
+          .request({});
+
+        return {
+          campaignId: String(campaignId),
+          status: 'sent',
+          message: 'Campaign sent immediately',
+        };
+      }
+    } catch (error: any) {
+      console.error('Mailjet campaign error:', error);
+      throw new Error(
+        `Failed to create/schedule campaign: ${
+          error.response?.body?.ErrorMessage || error.message || 'Unknown error'
         }`
       );
     }

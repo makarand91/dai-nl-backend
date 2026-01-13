@@ -26,6 +26,7 @@ export async function POST(request: NextRequest) {
     let finalHtmlContent = htmlContent;
     let finalTitle = title;
     let finalSubject = subject;
+    let brand: string | undefined;
 
     // If Strapi document ID is provided, fetch from Strapi
     if (strapiDocumentId) {
@@ -41,6 +42,7 @@ export async function POST(request: NextRequest) {
       finalTitle = title || `Newsletter - ${strapiContent.IssueDate}`;
       finalSubject = strapiContent.subject || subject || `Newsletter ${strapiContent.IssueDate}`;
       finalHtmlContent = await convertStrapiNewsletterToHTML(strapiContent);
+      brand = strapiContent.brand || undefined;
     }
 
     if (!finalHtmlContent || !finalTitle || !finalSubject) {
@@ -63,6 +65,7 @@ export async function POST(request: NextRequest) {
       subject: finalSubject,
       htmlContent: finalHtmlContent,
       strapiContentId: strapiDocumentId,
+      brand,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       status: 'draft',

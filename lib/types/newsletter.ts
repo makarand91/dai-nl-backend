@@ -5,6 +5,8 @@ export interface Newsletter {
   htmlContent: string;
   textContent?: string;
   strapiContentId?: string;
+  brand?: string;              // Brand identifier from Strapi
+  campaignId?: string;         // Campaign ID from Mailjet/MailWizz
   createdAt: string;
   updatedAt: string;
   status: 'draft' | 'scheduled' | 'sent' | 'failed';
