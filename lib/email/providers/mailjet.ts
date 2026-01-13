@@ -98,6 +98,14 @@ export class MailjetProvider implements IEmailProvider {
    * Uses Mailjet Campaign API v3
    */
   async createAndScheduleCampaign(options: CampaignOptions): Promise<CampaignResult> {
+    // Validate sender email upfront (needed in catch block too)
+    const senderEmail = options.from || this.defaultFromEmail;
+    if (!senderEmail) {
+      throw new Error(
+        'Sender email is required. Set MAILJET_FROM_EMAIL in your environment variables.'
+      );
+    }
+
     try {
       // Mailjet requires ContactsListID to be an integer
       const listIdInt = parseInt(options.listId, 10);
@@ -107,26 +115,25 @@ export class MailjetProvider implements IEmailProvider {
           `Find your list ID at: https://app.mailjet.com/contacts/lists`
         );
       }
-
-      // Validate sender email
-      const senderEmail = options.from || this.defaultFromEmail;
-      if (!senderEmail) {
-        throw new Error(
-          'Sender email is required. Set MAILJET_FROM_EMAIL in your environment variables.'
-        );
-      }
+      console.log('Creating Mailjet campaign with sender:', senderEmail);
+      console.log('List ID (parsed):', listIdInt);
+      console.log('Subject:', options.subject);
 
       // Step 1: Create campaign draft
+      const campaignPayload = {
+        Locale: 'en_US',
+        Sender: senderEmail,
+        SenderName: options.fromName || this.defaultFromName,
+        Subject: options.subject,
+        ContactsListID: listIdInt,
+        Title: options.campaignName || `Campaign - ${options.subject}`,
+      };
+
+      console.log('Sending campaign draft request:', JSON.stringify(campaignPayload, null, 2));
+
       const draftResponse: any = await this.client
         .post('campaigndraft', { version: 'v3' })
-        .request({
-          Locale: 'en_US',
-          Sender: senderEmail,
-          SenderName: options.fromName || this.defaultFromName,
-          Subject: options.subject,
-          ContactsListID: listIdInt,
-          Title: options.campaignName || `Campaign - ${options.subject}`,
-        });
+        .request(campaignPayload);
 
       const campaignId = draftResponse.body.Data[0].ID;
 
@@ -167,13 +174,24 @@ export class MailjetProvider implements IEmailProvider {
     } catch (error: any) {
       console.error('Mailjet campaign error:', error);
 
+      // Log detailed error information for debugging
+      if (error.response?.body) {
+        console.error('Mailjet API Response:', JSON.stringify(error.response.body, null, 2));
+      }
+
       // Provide helpful error messages for common issues
       const errorMessage = error.ErrorMessage || error.response?.body?.ErrorMessage || error.message || 'Unknown error';
+      const statusCode = error.statusCode || error.response?.statusCode;
 
       if (errorMessage.includes('valid and active sender')) {
         throw new Error(
-          `Sender email verification required. The email address "${options.from || this.defaultFromEmail}" must be verified in Mailjet. ` +
-          `Go to https://app.mailjet.com/account/sender to add and verify your sender email address.`
+          `Sender email verification required. The email address "${senderEmail}" must be verified in Mailjet. ` +
+          `Possible causes:\n` +
+          `1. Email not added to Mailjet senders: https://app.mailjet.com/account/sender\n` +
+          `2. Email status is not "Active" (might be pending validation)\n` +
+          `3. Domain SPF/DKIM records not configured properly\n` +
+          `4. API key doesn't have permission for campaign sending\n` +
+          `\nMailjet Error (${statusCode}): ${errorMessage}`
         );
       }
 
